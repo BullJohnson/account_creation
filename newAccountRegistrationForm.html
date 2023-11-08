@@ -1,0 +1,139 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>jQuery New Account Creation Form</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <style>
+            @charset "utf-8";
+            * {   box-sizing: border-box;}
+            body    {   width: 60%;
+                        margin: auto;
+                        border: 3px solid #000000;
+                        box-shadow: 5px 5px 7px #595959;
+                        padding-left: 70px;
+                        padding-bottom: 30px;
+                        margin-top: 30px;
+                        border-radius: 8% 8% 8% 8%;
+            }
+        </style>
+    </head>
+
+    <body>
+        <h1>jQuery New Account Creation Form</h1>
+        <form id="new-account-form">
+            <p><input type="email" size="30" name="email" value="" placeholder="Enter your email address"></p>
+            <p><input type="password" size="30" name="password1" value="" placeholder="Enter password, at least 6 characters"></p>
+            <p><input type="password" size="30" name="password2" value="" placeholder="Reenter password"></p>
+            <button type="submit">Create Account</button>
+        </form>
+        <p>Form Output: <span id="output"></span></p>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+        <script>
+            let displayEmail;
+            let  displayPassword;
+
+            //Confirmation Of Successful Account Creation
+            function accountCreated() {
+                const showButton = $("<button>").text("View Login Credentials");
+                $("ul").remove();
+                $("div").remove();
+                $("body").append("<div></div>");
+                $("div").append("<h1>Account Successfully Created!</h1>");
+                $("div").append(showButton);
+
+                //User Can Click Button To Reveal Login, If Desired
+                $("button").on("click",function (){
+                    const hideButton = $("<button>").text("Hide Login Credentials");
+                    $("button:last").remove();
+                    $("div").append("<h3>Your Login Credentials:</h3>");
+                    $("div").append("<ul></ul>");
+                    $("ul").append("<li></li>");
+                    $("li").append(displayEmail);
+                    $("ul").append("<li></li>");
+                    $("li:last").append(displayPassword);
+                    $("div").append(hideButton);
+                    $("button").on("click",accountCreated);
+                });
+            };
+
+            $(document).ready( () => {
+                $("#new-account-form").on("submit",function (evt){
+                    let isValid = true;
+                    let emailField;
+                    const emailPattern = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}\b/;
+                    const email = $(this).find("[name=email]").val().trim();                    
+
+                    //Validate Email Entry
+                    if (email == "") {
+                        isValid = false;
+                        emailField = "required";
+                    } else if (!emailPattern.test(email)) {
+                        isValid = false;
+                        emailField = "format";
+                    } 
+                    $("input[name='email']").val(email);
+
+                    //Validate Password Entry
+                    const firstPassword = $("input[name='password1']").val().trim();
+                    if (firstPassword == "") {
+                        $("input[name='password1']").next().text("please enter a password");
+                        isValid = false;
+                    } else if (firstPassword.length < 6) {
+                        $("input[name='password1']").next().text("must be at least 6 characters");
+                        isValid = false; 
+                    }
+                    $("input[name='password1']").val(firstPassword);
+
+                    //Match Passwords
+                    const secondPassword = $("input[name='password2']").val().trim();
+                    if (secondPassword == "") {
+                        $("input[name='password2']").next().text("please re-enter password");
+                        isValid = false;
+                    } else if (secondPassword != firstPassword) {
+                        $("input[name='password2']").next().text("passwords must match");
+                        isValid = false;
+                    }
+                    $("input[name='password2']").val(secondPassword);
+
+                    //Display Appropriate Error Messages & Prevent Default Action
+                    const outputItem = $("<li>");
+                    //Email Errors:
+                    if (isValid == false) {
+                        $("ul").remove();
+                        evt.preventDefault();
+                        $("input[name='email']").focus();
+                        $("body").append("<ul></ul>");
+                        $("ul").append(outputItem);
+                        if (emailField == "required") {
+                            $("li").append("<li>An Email Address Is Required</li>");
+                        } else if (emailField == "format") {
+                            $("li").append("<li>Email Format is Invalid</li>");
+                        }else {
+                            $("li").append(email);                     
+                        }
+                        //Password Errors:
+                        if (secondPassword != firstPassword) {
+                            $("ul").append("<li>Password re-entry does NOT match</li>");
+                        } else if (firstPassword.length < 6) {
+                            $("ul").append("<li>Password must be at least 6 characters</li>");
+                        } else {
+                            $("ul").append("<li>Password is valid and matches re-entry</li>");
+                            $("li:first").replaceWith("<li>Email Format is Invalid</li>");
+                        }
+
+                    //Call Function to Display Confirmation of Successfull Account Creation    
+                    } else {
+                        evt.preventDefault();
+                        displayEmail = email;
+                        displayPassword = firstPassword;
+                        $("button:submit").remove();
+                        accountCreated();
+                    }   
+                });
+            });
+        </script>
+    </body>
+</html>
